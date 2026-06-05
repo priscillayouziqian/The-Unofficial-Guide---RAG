@@ -10,6 +10,9 @@
 ## Domain
 
 <!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
+**Domain:** Student reviews for CUNY (City University of New York) study abroad and exchange programs.
+
+**Why this knowledge is valuable and hard to find:** Official university channels provide high-level overviews but miss practical details. This knowledge base aggregates real student experiences to answer specific, hard-to-find questions about financial aid (FAFSA/TAP) applicability, credit transferability, housing logistics, and day-to-day tips for budgeting and living abroad.
 
 ---
 
@@ -20,16 +23,16 @@
 
 | # | Source | Description | URL or location |
 |---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 |reddit.com/r/CUNY| study abroad at BMCC| https://www.reddit.com/r/CUNY/comments/1j7crv4/anyone_here_studied_abroad_at_bmcc/|
+| 2 | studyabroad101.com| 38 study abroad programs at CSI| https://www.studyabroad101.com/providers/cuny-college-of-staten-island|
+| 3 |reddit.com/r/CUNY | study abroad thru QCC| https://www.reddit.com/r/CUNY/comments/1qpbwan/talk_about_your_experience_studying_abroad/|
+| 4 |bmcc.cuny.edu | scholarships and financial aid| https://www.bmcc.cuny.edu/academics/success-programs/study-abroad/financial-aid-and-scholarships/|
+| 5 | cuny.edu| available programs| https://www1.cuny.edu/sites/global/students/programs/programs-search/|
+| 6 | hunter.cuny.edu| eligiblity requirements| https://www.hunter.cuny.edu/students/opportunities/study-abroad/eligibility-requirements/|
+| 7 | reddit.com/r/CUNY| review for affiliated programs at CUNY| https://www.reddit.com/r/CUNY/comments/17bxq0j/cuny_study_abroad/|
+| 8 |reddit.com/r/CUNY | eligibility question | https://www.reddit.com/r/CUNY/comments/11lhs5r/study_abroad/|
+| 9 | jjay.cuny.edu| student testimonials| https://www.jjay.cuny.edu/academics/undergraduate-programs/international-studies-programs/study-abroad|
+| 10 | bmcc.cuny.edu| student testimonials| https://www.bmcc.cuny.edu/academics/success-programs/study-abroad/student-testimonials/|
 
 ---
 
@@ -41,10 +44,13 @@
      A review-heavy corpus warrants different chunking than a long FAQ. -->
 
 **Chunk size:**
+500 characters.
 
 **Overlap:**
+**Overlap:** 50 characters.
 
 **Reasoning:**
+The corpus is a mix of unstructured conversational text (Reddit comments, student testimonials) and structured information (university financial aid policies). A 500-character chunk is small enough to keep the semantic focus tight on a single topic (e.g., a specific tip about housing or FAFSA) but large enough to capture a complete thought. The 50-character overlap ensures that context isn't lost mid-sentence, which is especially important for conversational Reddit threads where pronouns often refer back to previous sentences.
 
 ---
 
@@ -57,10 +63,13 @@
      support, accuracy on domain-specific text, latency? -->
 
 **Embedding model:**
+`all-MiniLM-L6-v2` (via `sentence-transformers`).
 
 **Top-k:**
+5 chunks per query.
 
 **Production tradeoff reflection:**
+ If deploying this for real users without cost constraints, I would consider a more powerful commercial model like OpenAI's `text-embedding-3-large` or a Voyage AI model fine-tuned for conversational text. These would likely capture the semantic nuances of informal Reddit reviews much better. I would also weigh the tradeoff between latency and accuracy (heavier models take longer to run) and look into models with strong multilingual support, as study abroad reviews frequently include foreign university names, cities, and cultural terms.
 
 ---
 
@@ -73,11 +82,11 @@
 
 | # | Question | Expected answer |
 |---|----------|-----------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| 1 | Can I use my Pell Grant and TAP to pay for a BMCC study abroad program, and are there specific scholarships available? | Yes, federal financial aid (like Pell Grants) can typically be used, though state aid (TAP) may have specific restrictions. Students should also look into the Benjamin A. Gilman Scholarship and BMCC-specific grants. |
+| 2 | What is the minimum GPA and credit requirement to be eligible to study abroad through Hunter College? | Students generally need a minimum cumulative GPA (often 2.75 to 3.0 depending on the program) and must have completed a certain number of credits (usually 24-30) at CUNY before going abroad. |
+| 3 | According to Reddit reviews for CUNY affiliated programs, what is the biggest challenge with getting study abroad credits to transfer? | The most common challenge is getting specific foreign courses pre-approved by academic department advisors to ensure they fulfill major requirements rather than just counting as general electives. |
+| 4 | What do student testimonials from John Jay and BMCC say about the impact of studying abroad on career or personal growth? | Testimonials emphasize that the experience improved their cross-cultural communication, fostered independence, and often clarified their career goals toward global or international fields. |
+| 5 | Based on StudyAbroad101 reviews for CSI programs, what are the typical housing options and their benefits? | Housing options usually include host families (homestays), which provide strong language and cultural immersion, or shared student apartments/dorms, which offer greater independence. |
 
 ---
 
@@ -87,9 +96,9 @@
      Consider: noisy or inconsistent documents, missing source attribution, off-topic
      retrieval, chunks that split key information across boundaries. -->
 
-1.
+1. **Messy unstructured data from Reddit:** Reddit comments often contain slang, acronyms, or lack context without the parent comment. Chunking this text strictly by 500 characters might break a comment mid-thought, leading to retrieved context that the LLM cannot fully understand.
 
-2.
+2. **Groq API Rate Limits:** Even though Groq's free tier is fast, there are often strict limits on requests per minute or tokens per minute. If multiple long documents are passed into the context window rapidly during testing, it might trigger rate-limit errors and break the generation step.
 
 ---
 
@@ -101,6 +110,24 @@
      You can use ASCII art, a Mermaid diagram, or embed a sketch as an image.
      You'll use this diagram as context when prompting AI tools to implement each stage. -->
 
+```text
+[Documents: CUNY sites, Reddit, etc.]
+         │ (Ingestion & Cleaning)
+         ▼
+[Chunking: 500 chars / 50 overlap]
+         │
+         ▼
+[Embedding: sentence-transformers (all-MiniLM-L6-v2)]
+         │
+         ▼
+[Vector Store: ChromaDB (Local)] ──► [Retrieval: Top 5 Chunks]
+                                             │
+                                             ▼
+[User Query] ──────────────────────► [Generation: Groq (llama-3.3-70b-versatile)]
+                                             │
+                                             ▼
+                                      [Final Answer]
+```
 ---
 
 ## AI Tool Plan
@@ -116,7 +143,10 @@
      with my specified chunk size and overlap" is a plan. -->
 
 **Milestone 3 — Ingestion and chunking:**
+I plan to use **Claude Code**. I will provide it with my list of URLs and my Chunking Strategy (500 characters / 50 overlap). I expect it to produce a Python script using `requests` and `BeautifulSoup` to scrape the text, clean out HTML, and chunk the text. I will verify the output by checking a sample of the generated chunks to ensure they are the correct length and the text is readable.
 
 **Milestone 4 — Embedding and retrieval:**
+I will use **Claude Code**. I will provide the "Retrieval Approach" and "Architecture" sections, explicitly telling it to use `ChromaDB` and `sentence-transformers` (`all-MiniLM-L6-v2`). I expect it to output code that initializes a ChromaDB collection, embeds the chunked text, and creates a function to search the top 5 chunks. I will verify this by running test queries and printing out the retrieved chunks to see if they are relevant.
 
 **Milestone 5 — Generation and interface:**
+I will use **Claude Code**. I will provide my Groq requirement (`llama-3.3-70b-versatile`) and my 5 evaluation questions. I expect it to produce a script that connects to the Groq API, inserts the user query and retrieved ChromaDB chunks into a prompt template, and generates an answer. I will verify this by checking if the LLM's answers are accurately grounded in the provided chunks and comparing them to my "Expected answers."
