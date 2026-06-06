@@ -12,6 +12,9 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
+# Scraped data
+chunks.json
+
 # ChromaDB local storage
 chroma_db/
 chroma/
