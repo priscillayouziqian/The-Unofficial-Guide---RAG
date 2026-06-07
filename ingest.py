@@ -1,17 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 import json
+import time
+import urllib.parse
+import os
 
-# 10 Sources from planning.md
+# 只保留能稳定抓取的 CUNY 官方网站
 URLS = [
-    "https://www.reddit.com/r/CUNY/comments/1j7crv4/anyone_here_studied_abroad_at_bmcc/",
     "https://www.studyabroad101.com/providers/cuny-college-of-staten-island",
-    "https://www.reddit.com/r/CUNY/comments/1qpbwan/talk_about_your_experience_studying_abroad/",
     "https://www.bmcc.cuny.edu/academics/success-programs/study-abroad/financial-aid-and-scholarships/",
     "https://www1.cuny.edu/sites/global/students/programs/programs-search/",
     "https://www.hunter.cuny.edu/students/opportunities/study-abroad/eligibility-requirements/",
-    "https://www.reddit.com/r/CUNY/comments/17bxq0j/cuny_study_abroad/",
-    "https://www.reddit.com/r/CUNY/comments/11lhs5r/study_abroad/",
     "https://www.jjay.cuny.edu/academics/undergraduate-programs/international-studies-programs/study-abroad",
     "https://www.bmcc.cuny.edu/academics/success-programs/study-abroad/student-testimonials/"
 ]
@@ -27,38 +26,36 @@ def load_documents(urls):
     for url in urls:
         try:
             print(f"Fetching: {url}")
-            if "reddit.com" in url:
-                # Bypass Reddit HTML blocks by fetching JSON directly
-                json_url = url.rstrip('/') + '.json'
-                # Reddit API requires a distinct User-Agent
-                reddit_headers = {"User-Agent": "python:rag-project:v1.0 (by /u/student)"}
-                
-                response = requests.get(json_url, headers=reddit_headers, timeout=10)
-                response.raise_for_status()
-                data = response.json()
-                
-                post_data = data[0]['data']['children'][0]['data']
-                title = post_data.get('title', '')
-                selftext = post_data.get('selftext', '')
-                
-                comments = []
-                if len(data) > 1:
-                    for child in data[1]['data'].get('children', []):
-                        if 'body' in child.get('data', {}):
-                            comments.append(child['data']['body'])
-                            
-                text = f"{title} {selftext} " + " ".join(comments)
-            else:
-                response = requests.get(url, headers=headers, timeout=10)
-                response.raise_for_status()
-                
-                soup = BeautifulSoup(response.text, 'html.parser')
-                # Extract text and replace newlines/tabs with spaces
-                text = soup.get_text(separator=' ', strip=True)
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            # Extract text and replace newlines/tabs with spaces
+            text = soup.get_text(separator=' ', strip=True)
             
             documents.append({"url": url, "text": text})
         except Exception as e:
             print(f"Failed to fetch {url}: {e}")
+            
+        # 每次抓取后暂停 1 秒
+        time.sleep(1)
+            
+    return documents
+
+def load_local_txt_documents(folder_path="documents"):
+    """从本地文件夹读取所有的 .txt 文件"""
+    documents = []
+    if not os.path.exists(folder_path):
+        print(f"Local folder '{folder_path}' not found. Skipping local documents.")
+        return documents
+        
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".txt"):
+            file_path = os.path.join(folder_path, filename)
+            with open(file_path, "r", encoding="utf-8") as f:
+                text = f.read()
+            documents.append({"url": f"Local File: {filename}", "text": text})
+            print(f"Loaded local file: {filename}")
             
     return documents
 
@@ -88,7 +85,10 @@ def chunk_documents(documents, chunk_size=500, overlap=50):
 
 if __name__ == "__main__":
     print("Starting document ingestion...")
-    docs = load_documents(URLS)
+    # 组合网络抓取的文档和本地的 txt 文档
+    web_docs = load_documents(URLS)
+    local_docs = load_local_txt_documents("documents")
+    docs = web_docs + local_docs
     print(f"\nSuccessfully loaded {len(docs)} documents.")
     
     chunks = chunk_documents(docs, chunk_size=500, overlap=50)

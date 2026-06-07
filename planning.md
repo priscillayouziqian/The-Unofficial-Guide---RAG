@@ -86,7 +86,7 @@ The corpus is a mix of unstructured conversational text (Reddit comments, studen
 | 2 | What is the minimum GPA and credit requirement to be eligible to study abroad through Hunter College? | Students generally need a minimum cumulative GPA (often 2.75 to 3.0 depending on the program) and must have completed a certain number of credits (usually 24-30) at CUNY before going abroad. |
 | 3 | According to Reddit reviews for CUNY affiliated programs, what is the biggest challenge with getting study abroad credits to transfer? | The most common challenge is getting specific foreign courses pre-approved by academic department advisors to ensure they fulfill major requirements rather than just counting as general electives. |
 | 4 | What do student testimonials from John Jay and BMCC say about the impact of studying abroad on career or personal growth? | Testimonials emphasize that the experience improved their cross-cultural communication, fostered independence, and often clarified their career goals toward global or international fields. |
-| 5 | Based on StudyAbroad101 reviews for CSI programs, what are the typical housing options and their benefits? | Housing options usually include host families (homestays), which provide strong language and cultural immersion, or shared student apartments/dorms, which offer greater independence. |
+| 5 | what are the typical housing options and their benefits on CSI programs? | Housing options usually include host families (homestays), which provide strong language and cultural immersion, or shared student apartments/dorms, which offer greater independence. |
 
 ---
 
