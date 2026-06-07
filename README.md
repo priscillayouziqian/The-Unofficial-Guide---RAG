@@ -52,7 +52,7 @@
 
 **Why these choices fit your documents:**
 
-**Final chunk count:**
+**Final chunk count:** 211
 
 ---
 
