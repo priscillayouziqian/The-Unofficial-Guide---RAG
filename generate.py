@@ -42,9 +42,8 @@ def generate_answer(query, context_chunks, sources):
         
     # 组装 Prompt，强调“基于事实回答 (Grounded Generation)”
     prompt = f"""You are a helpful advisor for CUNY students looking to study abroad.
-    Answer the user's question based ONLY on the provided context below.
-    If the answer cannot be found in the context, politely say "I cannot answer this based on the provided documents."
-    Whenever you use information, mention the source URL.
+    Answer the question using only the information in the provided documents. 
+    If the documents provide limited information, state what is available and explicitly advise the user on where they can manually look for more information (e.g., advising them to contact their school's study abroad representative) based on hints in the context. If the documents don't contain any relevant information at all, say 'I don't have enough information on that.'
 
     Context:
     {context_text}
@@ -63,6 +62,13 @@ def generate_answer(query, context_chunks, sources):
     
     return response.choices[0].message.content
 
+def ask(query):
+    """对外暴露的统一问答接口，返回答案与来源列表"""
+    chunks, sources = retrieve_context(query)
+    answer = generate_answer(query, chunks, sources)
+    unique_sources = list(set([s['url'] for s in sources]))
+    return {"answer": answer, "sources": unique_sources}
+
 def main():
     print("\n=======================================================")
     print("🎓 Welcome to the CUNY Study Abroad QA System!")
@@ -77,13 +83,15 @@ def main():
             continue
             
         print("\n🔍 Searching knowledge base...")
-        chunks, sources = retrieve_context(query)
         
         print("🤖 Generating answer via Groq LLaMA 3...\n")
-        answer = generate_answer(query, chunks, sources)
+        result = ask(query)
         
         print("====================== ANSWER ======================")
-        print(answer)
+        print(result["answer"])
+        print("\n📚 Retrieved Sources:")
+        for s in result["sources"]:
+            print(f"- {s}")
         print("====================================================")
 
 if __name__ == "__main__":
