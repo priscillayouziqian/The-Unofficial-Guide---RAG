@@ -1,6 +1,6 @@
 # The Unofficial Guide — Rag Project
 
-▶️ **[Watch the Project Demo on YouTube]((https://www.youtube.com/watch?v=rPFcN6HoqPA))**
+▶️ **[Watch the Project Demo on YouTube](https://www.youtube.com/watch?v=rPFcN6HoqPA)**
 
 ---
 
